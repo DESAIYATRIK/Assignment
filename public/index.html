@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management</title>
+  <style>
+    .form-container {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Student Management</h1>
+
+  <!-- Button to retrieve list of students -->
+  <button onclick="getStudents()">Get All Students</button>
+  <div id="student-list"></div>
+
+  <!-- Form to add a new student -->
+  <div class="form-container">
+    <h3>Add New Student</h3>
+    <form id="addStudentForm">
+      <input type="text" id="studentId" placeholder="ID" required>
+      <input type="text" id="studentName" placeholder="Name" required>
+      <input type="number" id="studentAge" placeholder="Age" required>
+      <button type="submit">Add Student</button>
+    </form>
+  </div>
+
+  <!-- Form to retrieve a student by ID -->
+  <div class="form-container">
+    <h3>Retrieve Student by ID</h3>
+    <input type="text" id="retrieveId" placeholder="Student ID">
+    <button onclick="getStudentById()">Get Student</button>
+    <div id="student-detail"></div>
+  </div>
+
+  <!-- Form to update a student by ID -->
+  <div class="form-container">
+    <h3>Update Student Information</h3>
+    <input type="text" id="updateId" placeholder="Student ID">
+    <input type="text" id="updateName" placeholder="Name">
+    <input type="number" id="updateAge" placeholder="Age">
+    <button onclick="updateStudent()">Update Student</button>
+  </div>
+
+  <!-- Form to delete a student by ID -->
+  <div class="form-container">
+    <h3>Delete Student by ID</h3>
+    <input type="text" id="deleteId" placeholder="Student ID">
+    <button onclick="deleteStudent()">Delete Student</button>
+  </div>
+
+  <script>
+    async function getStudents() {
+      const res = await fetch('/students');
+      const students = await res.json();
+      const studentList = document.getElementById('student-list');
+      studentList.innerHTML = '<h3>All Students:</h3><ul>' +
+        students.map(student => `<li>${student.name} (ID: ${student.id}, Age: ${student.age})</li>`).join('') +
+        '</ul>';
+    }
+
+    document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newStudent = {
+        id: document.getElementById('studentId').value,
+        name: document.getElementById('studentName').value,
+        age: parseInt(document.getElementById('studentAge').value)
+      };
+      await fetch('/students', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newStudent)
+      });
+      alert('Student Added!');
+    });
+
+    async function getStudentById() {
+      const id = document.getElementById('retrieveId').value;
+      const res = await fetch(`/students/${id}`);
+      const student = await res.json();
+      const studentDetail = document.getElementById('student-detail');
+      if (student) {
+        studentDetail.innerHTML = `<h4>${student.name} (ID: ${student.id}, Age: ${student.age})</h4>`;
+      } else {
+        studentDetail.innerHTML = 'Student not found';
+      }
+    }
+
+    async function updateStudent() {
+      const id = document.getElementById('updateId').value;
+      const updatedData = {
+        name: document.getElementById('updateName').value,
+        age: parseInt(document.getElementById('updateAge').value)
+      };
+      await fetch(`/students/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      });
+      alert('Student Updated!');
+    }
+
+    async function deleteStudent() {
+      const id = document.getElementById('deleteId').value;
+      await fetch(`/students/${id}`, { method: 'DELETE' });
+      alert('Student Deleted!');
+    }
+  </script>
+</body>
+</html>
